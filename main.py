@@ -5,7 +5,6 @@ from PyQt5.QtCore import *
 from worker import * 
 from backtest import *
 from trader import *
-from binance.client import Client
 from PyQt5.QtCore import Qt
 import pprint
 
