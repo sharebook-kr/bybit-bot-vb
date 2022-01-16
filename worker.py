@@ -20,6 +20,7 @@ class Worker(QThread):
             )
             #pprint.pprint(info)
             last_price = info['result'][0]['last_price']
+            last_price = float(last_price)
             self.last_price.emit([self.symbol, last_price])
             time.sleep(1)
             

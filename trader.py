@@ -14,7 +14,7 @@ class Trader(QThread):
         self.symbol = symbol 
         self.main = main
 
-        with open("../../../bybit.key") as f:
+        with open("./bybit.key") as f:
             lines = f.readlines()
             api_key = lines[0].strip()
             api_secret = lines[1].strip()
@@ -52,13 +52,13 @@ class Trader(QThread):
 
                 # long position
                 if self.main.positions[self.symbol][0] == False:
+                    # check the open long condition
                     self.open_long()
-                    self.main.positions[self.symbol][0] = True
 
                 # short position
                 if self.main.positions[self.symbol][1] == False:
+                    # check the open short condition
                     self.open_short()
-                    self.main.positions[self.symbol][1] = True
 
             # 08:59:00 포지션 정리
             if now.hour == 8 and now.minute == 59 and (now.second > 0 and now.second < 10):
@@ -69,8 +69,13 @@ class Trader(QThread):
 
             # 09:01:00 거래일 파라미터 업데이트 
             if now.hour == 9 and now.minute == 1 and (now.second > 0 and now.second < 10):
+                # 잔고 갱신 
+                self.main.fetch_balance(init=1)
+
+                # backtest thread 시작 
                 for b in self.main.backtest:
                     b.start()
+
                 time.sleep(10)
 
             time.sleep(1) 
@@ -78,6 +83,7 @@ class Trader(QThread):
     def open_long(self):
         """상승장에서 long position open
         """
+        cur_price = self.main.data[self.symbol]["현재가"]
         target_price = self.main.data[self.symbol]["상승목표가"]
         ndigits = self.price_round[self.symbol]
 
@@ -87,24 +93,31 @@ class Trader(QThread):
         quantity = self.usdt / order_price
         quantity = round(quantity, qty_round)
 
-        # open the position 
-        resp = self.session.place_active_order(
-            symbol=self.symbol,
-            side="Buy",
-            order_type="Limit",
-            qty=quantity,
-            price=order_price,
-            time_in_force="GoodTillCancel",
-            reduce_only=False,
-            close_on_trigger=False
-        )
+        if cur_price >= order_price:
+            self.main.text.appendPlainText(f"{self.symbol} enter long position") 
 
-        # save the quantity
-        self.long_quantity = quantity
+            # open the position 
+            resp = self.session.place_active_order(
+                symbol=self.symbol,
+                side="Buy",
+                order_type="Limit",
+                qty=quantity,
+                price=order_price,
+                time_in_force="GoodTillCancel",
+                reduce_only=False,
+                close_on_trigger=False
+            )
+
+            # update position
+            self.main.positions[self.symbol][0] = True
+
+            # save the quantity
+            self.long_quantity = quantity
 
     def open_short(self):
         """하락장에서 short position open
         """
+        cur_price = self.main.data[self.symbol]["현재가"]
         target_price = self.main.data[self.symbol]["하락목표가"]
         ndigits = self.price_round[self.symbol]
 
@@ -115,19 +128,24 @@ class Trader(QThread):
         quantity = round(quantity, qty_round)
 
         # open the position
-        resp = self.session.place_active_order(
-            symbol=self.symbol,
-            side="Sell",
-            order_type="Limit",
-            qty=quantity,
-            price=order_price,
-            time_in_force="GoodTillCancel",
-            reduce_only=False,
-            close_on_trigger=False
-        )
+        if cur_price <= order_price:
+            self.main.text.appendPlainText(f"{self.symbol} enter short position") 
 
-        # save the quantity
-        self.short_quantity = quantity
+            resp = self.session.place_active_order(
+                symbol=self.symbol,
+                side="Sell",
+                order_type="Limit",
+                qty=quantity,
+                price=order_price,
+                time_in_force="GoodTillCancel",
+                reduce_only=False,
+                close_on_trigger=False
+            )
+
+            self.main.positions[self.symbol][1] = True
+
+            # save the quantity
+            self.short_quantity = quantity
 
     def close_long(self):
         """long position close

@@ -60,7 +60,7 @@ class MyWindow(QMainWindow):
         self.create_threads()
 
     def connect(self):
-        with open("../../../bybit.key") as f:
+        with open("./bybit.key") as f:
             lines = f.readlines()
             api_key = lines[0].strip()
             api_secret = lines[1].strip()
@@ -109,11 +109,14 @@ class MyWindow(QMainWindow):
 
     def update_table_widget(self):
         for r, symbol in enumerate(self.symbols):
-            for c, lable in enumerate(self.labels):
-                data = self.data[symbol][lable]
+            for c, label in enumerate(self.labels):
+                data = self.data[symbol][label]
 
-                if lable in ["상승목표가", "하락목표가"]:
+                if label in ["상승목표가", "하락목표가"]:
                     data = "{:.3f}".format(data) 
+
+                if label == "보유상태":
+                    data = f"{self.positions[symbol][0]} | {self.positions[symbol][1]}"
 
                 item = QTableWidgetItem(str(data))
                 if c == 0:
