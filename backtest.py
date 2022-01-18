@@ -10,10 +10,12 @@ import sys
 
 class BackTest(QThread):
     params = pyqtSignal(list)
+    message = pyqtSignal(str)
 
-    def __init__(self, symbol):
+    def __init__(self, symbol, main=None):
         super().__init__()
         self.symbol = symbol 
+        self.main = main
         self.df = None
         self.session = HTTP(
             endpoint="https://api.bybit.com",
@@ -92,11 +94,15 @@ class BackTest(QThread):
 
         up_window, up_k = self.find_optimal(df.copy(), 1)
         up_df = self.backtest(df.copy(), up_window, up_k, 1)
-        #print(up_df)
+        acc_return = up_df["누적수익률"][-2]
+        message = f"{self.symbol} 상승장 누적 수익률: {acc_return:.2f}"
+        self.message.emit(message);
 
         down_window, down_k = self.find_optimal(df.copy(), 0)
         down_df = self.backtest(df.copy(), down_window, down_k, 0)
-        #print(down_df)
+        acc_return = down_df["누적수익률"][-2]
+        message = f"{self.symbol} 하락장 누적 수익률: {acc_return:.2f}"
+        self.message.emit(message);
 
         self.params.emit([
             self.symbol, 

@@ -15,15 +15,18 @@ class Worker(QThread):
 
     def run(self):
         while True:
-            info = self.session.latest_information_for_symbol(
-                symbol=self.symbol
-            )
-            #pprint.pprint(info)
-            last_price = info['result'][0]['last_price']
-            last_price = float(last_price)
-            self.last_price.emit([self.symbol, last_price])
-            time.sleep(1)
-            
+            try:
+                info = self.session.latest_information_for_symbol(
+                    symbol=self.symbol
+                )
+
+                last_price = info['result'][0]['last_price']
+                last_price = float(last_price)
+                self.last_price.emit([self.symbol, last_price])
+                time.sleep(1)
+            except:
+                time.sleep(10)
+                
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -90,7 +90,7 @@ class Trader(QThread):
         qty_round = self.quantity_round[self.symbol]
         order_price = round(target_price, ndigits)
 
-        quantity = self.usdt / order_price
+        quantity = (self.usdt / order_price) * 0.95
         quantity = round(quantity, qty_round)
 
         if cur_price >= order_price:
@@ -100,9 +100,10 @@ class Trader(QThread):
             resp = self.session.place_active_order(
                 symbol=self.symbol,
                 side="Buy",
-                order_type="Limit",
+                #order_type="Limit",
+                order_type="Market",
                 qty=quantity,
-                price=order_price,
+                #price=order_price,
                 time_in_force="GoodTillCancel",
                 reduce_only=False,
                 close_on_trigger=False
@@ -124,7 +125,7 @@ class Trader(QThread):
         qty_round = self.quantity_round[self.symbol]
         order_price = round(target_price, ndigits)
 
-        quantity = self.usdt / order_price
+        quantity = (self.usdt / order_price) * 0.95
         quantity = round(quantity, qty_round)
 
         # open the position
@@ -134,9 +135,10 @@ class Trader(QThread):
             resp = self.session.place_active_order(
                 symbol=self.symbol,
                 side="Sell",
-                order_type="Limit",
+                #order_type="Limit",
+                order_type="Market",
                 qty=quantity,
-                price=order_price,
+                #price=order_price,
                 time_in_force="GoodTillCancel",
                 reduce_only=False,
                 close_on_trigger=False

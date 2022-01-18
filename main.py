@@ -20,7 +20,8 @@ class MyWindow(QMainWindow):
         self.backtest = []
         self.trader = []
 
-        self.symbols = ['BTCUSDT', 'ETHUSDT', "XRPUSDT"]
+        #self.symbols = ['BTCUSDT', 'ETHUSDT', "XRPUSDT"]
+        self.symbols = ['BTCUSDT', 'XRPUSDT']
         self.ready = {k:0 for k in self.symbols}
         self.positions = {k:[False, False] for k in self.symbols}
         self.labels = ["코인", "현재가", "상승목표가", "하락목표가", "상승W", "상승K", "하락W", "하락K", "보유상태"]
@@ -73,8 +74,11 @@ class MyWindow(QMainWindow):
         self.fetch_balance(init=1)
 
     def fetch_balance(self, init=0):
-        balances = self.session.get_wallet_balance()
-        usdt = balances['result']['USDT']['wallet_balance']
+        try:
+            balances = self.session.get_wallet_balance()
+            usdt = balances['result']['USDT']['wallet_balance']
+        except:
+            usdt = self.usdt    # set previous usdt if fetch failed
 
         if init == 1:
             now = datetime.datetime.now()
@@ -91,8 +95,9 @@ class MyWindow(QMainWindow):
             w.start()
             self.worker.append(w)
 
-            b = BackTest(symbol)
+            b = BackTest(symbol, self)
             b.params.connect(self.update_params)
+            b.message.connect(self.update_message)
             b.start()
             self.backtest.append(b)
 
@@ -130,6 +135,10 @@ class MyWindow(QMainWindow):
         symbol, last = info 
         self.data[symbol]['코인'] = symbol
         self.data[symbol]['현재가'] = last
+    
+    @pyqtSlot(str)
+    def update_message(self, text):
+        self.text.appendPlainText(text)
 
     @pyqtSlot(list)
     def update_params(self, params):
@@ -144,7 +153,7 @@ class MyWindow(QMainWindow):
         self.data[symbol]['하락K'] = "{:.2f}".format(down_k) 
 
         self.ready[symbol] = True 
-        self.text.appendPlainText(f"{symbol} 파라미터 갱신 완료") 
+        #self.text.appendPlainText(f"{symbol} 파라미터 갱신 완료") 
 
 
 if __name__ == "__main__":
