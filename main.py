@@ -102,6 +102,7 @@ class MyWindow(QMainWindow):
             self.backtest.append(b)
 
             t = Trader(symbol, self)
+            t.message.connect(self.update_message)
             t.start()
             self.trader.append(t)
 
@@ -126,7 +127,7 @@ class MyWindow(QMainWindow):
                 if c == 0:
                     item.setTextAlignment(Qt.AlignCenter)
                 else:
-                    item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+                    item.setTextAlignment(int(Qt.AlignRight | Qt.AlignVCenter))
 
                 self.table.setItem(r, c, item)
 

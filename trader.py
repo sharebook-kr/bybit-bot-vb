@@ -8,6 +8,8 @@ import datetime
 
 
 class Trader(QThread):
+    message = pyqtSignal(str)
+
     def __init__(self, symbol, main=None):
         super().__init__()
 
@@ -94,7 +96,8 @@ class Trader(QThread):
         quantity = round(quantity, qty_round)
 
         if cur_price >= order_price:
-            self.main.text.appendPlainText(f"{self.symbol} enter long position") 
+            message = f"{self.symbol} enter long position" 
+            self.message.emit(message)
 
             # open the position 
             resp = self.session.place_active_order(
@@ -130,7 +133,8 @@ class Trader(QThread):
 
         # open the position
         if cur_price <= order_price:
-            self.main.text.appendPlainText(f"{self.symbol} enter short position") 
+            message = f"{self.symbol} enter short position" 
+            self.message.emit(message)
 
             resp = self.session.place_active_order(
                 symbol=self.symbol,
