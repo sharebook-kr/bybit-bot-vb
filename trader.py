@@ -100,23 +100,26 @@ class Trader(QThread):
             self.message.emit(message)
 
             # open the position 
-            resp = self.session.place_active_order(
-                symbol=self.symbol,
-                side="Buy",
-                #order_type="Limit",
-                order_type="Market",
-                qty=quantity,
-                #price=order_price,
-                time_in_force="GoodTillCancel",
-                reduce_only=False,
-                close_on_trigger=False
-            )
+            try:
+                resp = self.session.place_active_order(
+                    symbol=self.symbol,
+                    side="Buy",
+                    #order_type="Limit",
+                    order_type="Market",
+                    qty=quantity,
+                    #price=order_price,
+                    time_in_force="GoodTillCancel",
+                    reduce_only=False,
+                    close_on_trigger=False
+                )
 
-            # update position
-            self.main.positions[self.symbol][0] = True
+                # update position
+                self.main.positions[self.symbol][0] = True
 
-            # save the quantity
-            self.long_quantity = quantity
+                # save the quantity
+                self.long_quantity = quantity
+            except:
+                pass
 
     def open_short(self):
         """하락장에서 short position open
@@ -136,50 +139,59 @@ class Trader(QThread):
             message = f"{self.symbol} enter short position" 
             self.message.emit(message)
 
-            resp = self.session.place_active_order(
-                symbol=self.symbol,
-                side="Sell",
-                #order_type="Limit",
-                order_type="Market",
-                qty=quantity,
-                #price=order_price,
-                time_in_force="GoodTillCancel",
-                reduce_only=False,
-                close_on_trigger=False
-            )
+            try:
+                resp = self.session.place_active_order(
+                    symbol=self.symbol,
+                    side="Sell",
+                    #order_type="Limit",
+                    order_type="Market",
+                    qty=quantity,
+                    #price=order_price,
+                    time_in_force="GoodTillCancel",
+                    reduce_only=False,
+                    close_on_trigger=False
+                )
 
-            self.main.positions[self.symbol][1] = True
+                self.main.positions[self.symbol][1] = True
 
-            # save the quantity
-            self.short_quantity = quantity
+                # save the quantity
+                self.short_quantity = quantity
+            except:
+                pass
 
     def close_long(self):
         """long position close
         """
         if self.long_quantity != 0:
-            resp = self.session.place_active_order(
-                symbol=self.symbol,
-                side="Sell",
-                order_type="Market",
-                qty=self.long_quantity,
-                time_in_force="GoodTillCancel",
-                reduce_only=True,
-                close_on_trigger=False
-            )
+            try:
+                resp = self.session.place_active_order(
+                    symbol=self.symbol,
+                    side="Sell",
+                    order_type="Market",
+                    qty=self.long_quantity,
+                    time_in_force="GoodTillCancel",
+                    reduce_only=True,
+                    close_on_trigger=False
+                )
+            except:
+                pass
 
     def close_short(self):
         """short position close
         """
         if self.short_quantity != 0:
-            resp = self.session.place_active_order(
-                symbol=self.symbol,
-                side="Buy",
-                order_type="Market",
-                qty=self.short_quantity,
-                time_in_force="GoodTillCancel",
-                reduce_only=True,
-                close_on_trigger=False
-            )
+            try:
+                resp = self.session.place_active_order(
+                    symbol=self.symbol,
+                    side="Buy",
+                    order_type="Market",
+                    qty=self.short_quantity,
+                    time_in_force="GoodTillCancel",
+                    reduce_only=True,
+                    close_on_trigger=False
+                )
+            except:
+                pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
