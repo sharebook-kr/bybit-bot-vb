@@ -16,18 +16,6 @@ class Trader(QThread):
         self.symbol = symbol 
         self.main = main
 
-        with open("./bybit.key") as f:
-            lines = f.readlines()
-            api_key = lines[0].strip()
-            api_secret = lines[1].strip()
-
-        self.session = HTTP(
-            endpoint="https://api.bybit.com", 
-            api_key=api_key, 
-            api_secret=api_secret,
-            spot=False
-        )
-
         self.price_round = {
             "BTCUSDT": 1,
             "ETHUSDT": 2,
@@ -43,6 +31,21 @@ class Trader(QThread):
         self.usdt = 0
         self.long_quantity = 0
         self.short_quantity = 0
+
+        self.create_session()
+
+    def create_session(self):
+        with open("./bybit.key") as f:
+            lines = f.readlines()
+            api_key = lines[0].strip()
+            api_secret = lines[1].strip()
+
+        self.session = HTTP(
+            endpoint="https://api.bybit.com", 
+            api_key=api_key, 
+            api_secret=api_secret,
+            spot=False
+        )
 
     def run(self):
         while True:
@@ -64,6 +67,7 @@ class Trader(QThread):
 
             # 08:59:00 포지션 정리
             if now.hour == 8 and now.minute == 59 and (now.second > 0 and now.second < 10):
+                self.create_session()
                 self.close_long()
                 self.close_short()
                 self.main.ready[self.symbol] = 0    # 9시 전까지는 매매 않하도록
