@@ -1,5 +1,5 @@
 import datetime
-import sys 
+import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from worker import * 
@@ -7,6 +7,7 @@ from backtest import *
 from trader import *
 from PyQt5.QtCore import Qt
 import pprint
+import time
 
 
 class MyWindow(QMainWindow):
@@ -108,7 +109,13 @@ class MyWindow(QMainWindow):
 
     def update_ui(self):
         now = datetime.datetime.now()
-        self.statusBar().showMessage(str(now))
+        local_time_stamp = int(time.mktime(now.timetuple()))
+        server_time = self.session.server_time() 
+        server_time_stamp = int(float(server_time['time_now']))
+        diff_time_stamp = server_time_stamp - local_time_stamp
+        diff_msg = f" | SERVER: {server_time_stamp} LOCAL: {local_time_stamp} DIFF: {diff_time_stamp}" 
+
+        self.statusBar().showMessage(str(now)[:19] + diff_msg)
         self.update_table_widget()
         self.fetch_balance()
 
