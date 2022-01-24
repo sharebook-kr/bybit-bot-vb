@@ -99,7 +99,8 @@ class Trader(QThread):
         quantity = (self.usdt / order_price) * 0.95
         quantity = round(quantity, qty_round)
 
-        if cur_price >= order_price:
+        # 장중간에 프로그램을 시작하는 경우 order_price 대비 1% 이내에서만 주문 되도록
+        if (cur_price >= order_price) and (cur_price < order_price * 1.01):
             message = f"{self.symbol} enter long position" 
             self.message.emit(message)
 
@@ -139,7 +140,8 @@ class Trader(QThread):
         quantity = round(quantity, qty_round)
 
         # open the position
-        if cur_price <= order_price:
+        # 장중간에 프로그램을 시작하는 경우 order_price 대비 1% 이내에서만 주문 되도록
+        if (cur_price <= order_price) and (cur_price > order_price * 0.99):
             message = f"{self.symbol} enter short position" 
             self.message.emit(message)
 
