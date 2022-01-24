@@ -51,6 +51,7 @@ class MyWindow(QMainWindow):
         self.setCentralWidget(widget)
 
         self.connect()
+        self.fetch_balance(init=1)
 
         # Timer
         self.timer = QTimer(self)
@@ -72,7 +73,6 @@ class MyWindow(QMainWindow):
             api_secret=api_secret,
             spot=False
         )
-        self.fetch_balance(init=1)
 
     def fetch_balance(self, init=0):
         try:
@@ -110,7 +110,13 @@ class MyWindow(QMainWindow):
     def update_ui(self):
         now = datetime.datetime.now()
         local_time_stamp = int(time.mktime(now.timetuple()))
-        server_time = self.session.server_time() 
+
+        try:
+            server_time = self.session.server_time() 
+        except:
+            self.connect()
+            server_time = self.session.server_time() 
+
         server_time_stamp = int(float(server_time['time_now']))
         diff_time_stamp = server_time_stamp - local_time_stamp
         diff_msg = f" | SERVER: {server_time_stamp} LOCAL: {local_time_stamp} DIFF: {diff_time_stamp}" 
